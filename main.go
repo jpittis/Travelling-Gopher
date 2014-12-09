@@ -66,7 +66,7 @@ func newTrip(locations []location) trip {
 }
 
 /* Generates a new random trip and shuffles it into given number of combinations. */
-func newGeneration(numLocations int, numTrips int, xMax int, yMax int) []trip {
+func newGeneration(numTrips int, numLocations int, xMax int, yMax int) []trip {
     locations := randLocations(numLocations, xMax, yMax)
     generation := make([]trip, numTrips)
     for i := 0; i < numTrips; i++ {
@@ -91,7 +91,7 @@ func makeChildren(generation []trip, numChildren int) []trip {
     length := len(generation)
     children := make([]trip, 0, length)
     for i := 0; i < length; i++ {
-        for j := 0; j <length; j++ {
+        for j := i; j <length; j++ {
             if i != j {
                 child := makeChild(generation[i].locations, generation[j].locations)
                 // room for mutation?
@@ -120,9 +120,45 @@ func makeChild(a []location, b []location) []location {
     return child
 }
 
+/* Returns the given number of smallest trips.
+TODO: base case of len(generation) == 0 will crash */
+func getSmallest(generation []trip, numTrips int) []trip {
+    smallest := make([]int, 0, numTrips)
+    for i := 0; i < numTrips; i++ {
+        index := 0
+        for j := 1; j < len(generation); j++ {
+            if generation[j].totalDistance < generation[index].totalDistance {
+                index = j
+            }
+        }
+        smallest = append(smallest, index)
+    }
+    return getGenerationIndexes(generation, smallest)
+}
+
+/* Returns new slice with values at indexes. */
+func getGenerationIndexes(generation []trip, indexes []int) []trip {
+    length := len(indexes)
+    result := make([]trip, length)
+    for i := 0; i < length; i++ {
+        result[i] = generation[indexes[i]]
+    }
+    return result
+}
+
+/* Print out a generation. */
+func printGeneration(generation []trip) {
+    for i := 0; i < len(generation); i++ {
+        fmt.Printf("%s\n", generation[i])
+    }
+}
+
 /* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
-    generation := newGeneration(10, 10, 100, 100)
-    generation = makeChildren(generation, 45)
-    fmt.Printf("%s\n", generation)
+    generation := newGeneration(10, 4, 10, 10)
+    printGeneration(generation)
+    fmt.Print("----------\n")
+    //generation = makeChildren(generation, 3)
+    generation = getSmallest(generation, 3)
+    printGeneration(generation)
 }
