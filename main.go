@@ -127,13 +127,22 @@ func getSmallest(generation []trip, numTrips int) []trip {
     for i := 0; i < numTrips; i++ {
         index := 0
         for j := 1; j < len(generation); j++ {
-            if generation[j].totalDistance < generation[index].totalDistance {
+            if generation[j].totalDistance < generation[index].totalDistance && !integerInSlice(smallest, j) {
                 index = j
             }
         }
         smallest = append(smallest, index)
     }
     return getGenerationIndexes(generation, smallest)
+}
+
+func integerInSlice(slice []int, num int) bool {
+    for i := 0; i < len(slice); i++ {
+        if slice[i] == num {
+            return true
+        }
+    }
+    return false
 }
 
 /* Returns new slice with values at indexes. */
@@ -149,16 +158,23 @@ func getGenerationIndexes(generation []trip, indexes []int) []trip {
 /* Print out a generation. */
 func printGeneration(generation []trip) {
     for i := 0; i < len(generation); i++ {
-        fmt.Printf("%s\n", generation[i])
+        fmt.Printf("%+v\n", generation[i])
     }
 }
 
 /* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
-    generation := newGeneration(10, 4, 10, 10)
+    generation := newGeneration(3, 5, 1000, 1000)
+    fmt.Print("-----Before Training-----\n")
     printGeneration(generation)
-    fmt.Print("----------\n")
-    //generation = makeChildren(generation, 3)
-    generation = getSmallest(generation, 3)
+
+    n := 100
+    for i := 0; i < n; i++ {
+        generation = getSmallest(generation, 3)
+        generation = makeChildren(generation, 3)
+    }
+
+    generation = getSmallest(generation, 2)
+    fmt.Print("-----After Training-----\n")
     printGeneration(generation)
 }
