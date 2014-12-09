@@ -21,6 +21,11 @@ type location struct {
     y int
 }
 
+type trip struct {
+    locations []location
+    totalDistance float64
+}
+
 /* Creates a random location with given maximums. */
 func randLocation(xMax int, yMax int) location {
     x := rand.Intn(xMax * 2) + 1 - xMax 
@@ -29,7 +34,7 @@ func randLocation(xMax int, yMax int) location {
 }
 
 /* Creates list of locations with given maximums. */
-func randTrip(numLocations int, xMax int, yMax int) []location {
+func randLocations(numLocations int, xMax int, yMax int) []location {
     trip := make([]location, numLocations)
     for i := 0; i < numLocations; i++ {
         trip[i] = randLocation(xMax, yMax)
@@ -37,23 +42,51 @@ func randTrip(numLocations int, xMax int, yMax int) []location {
     return trip
 }
 
-/* Return distance between two given locations. */
+/* Return distance between two given locations.
+TODO: sqrt may not be needed */
 func distanceBetween(a location, b location) float64 {
     return math.Sqrt(math.Pow(float64(a.x - b.x), float64(2)) + math.Pow(float64(a.y - b.y), float64(2)))
 }
 
 /* Return distance of round trip. */
-func totalDistance(trip []location) float64 {
+func totalDistance(locations []location) float64 {
     var total float64
-    for i := 0; i < len(trip) - 1; i++ {
-        total += distanceBetween(trip[i], trip[i + 1])
+    length := len(locations)
+    for i := 0; i < length - 1; i++ {
+        total += distanceBetween(locations[i], locations[i + 1])
     }
-    total += distanceBetween(trip[len(trip) - 2], trip[len(trip) - 1])
+    total += distanceBetween(locations[length - 2], locations[length - 1])
     return total
 }
 
-/* Generates a random trip and finds the distance. */
+/* Creates a trip structures by combining given locations
+and calculating total distance. */
+func newTrip(locations []location) trip {
+    return trip{locations: locations, totalDistance: totalDistance(locations)}
+}
+
+/* Generates a new random trip and shuffles it into given number of combinations. */
+func newGeneration(numLocations int, numTrips int, xMax int, yMax int) []trip {
+    locations := randLocations(numLocations, xMax, yMax)
+    generation := make([]trip, numTrips)
+    for i := 0; i < numTrips; i++ {
+        generation[i] = newTrip(shuffleLocations(locations))
+    }
+    return generation
+}
+
+/* Returns a randomly shuffled set of locations. */
+func shuffleLocations(locations []location) []location {
+    order := rand.Perm(len(locations))
+    result := make([]location, len(locations))
+    for i, j := range order {
+        result[j] = locations[i]
+    }
+    return result
+}
+
+/* Create a random generations of trips. Run the evolutionary loop. */
 func main() {
-    trip := randTrip(10, 100, 100)
-    fmt.Printf("%f\n", totalDistance(trip))
+    generation := newGeneration(10, 10, 100, 100)
+    fmt.Printf("%s\n", generation)
 }
