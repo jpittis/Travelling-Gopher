@@ -85,8 +85,44 @@ func shuffleLocations(locations []location) []location {
     return result
 }
 
-/* Create a random generations of trips. Run the evolutionary loop. */
+/* Given a generation of trips, create n choose 2 children.
+TODO: mutation in this step? */
+func makeChildren(generation []trip, numChildren int) []trip {
+    length := len(generation)
+    children := make([]trip, 0, length)
+    for i := 0; i < length; i++ {
+        for j := 0; j <length; j++ {
+            if i != j {
+                child := makeChild(generation[i].locations, generation[j].locations)
+                // room for mutation?
+                children = append(children, newTrip(child))
+            }
+        }
+    }
+    return children
+}
+
+/* Returns a child of the two given locations. */
+func makeChild(a []location, b []location) []location {
+    length := len(a)
+    child := make([]location, length)
+
+    start := rand.Intn(length)
+    end := rand.Intn(length)
+    /* Index from start to end will be from parent a. The rest is from parent b. */
+    for i := 0; i < length; i++ {
+        if i >= start && i <= end {
+            child[i] = a[i]
+        } else {
+            child[i] = b[i]  
+        }
+    }
+    return child
+}
+
+/* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
     generation := newGeneration(10, 10, 100, 100)
+    generation = makeChildren(generation, 45)
     fmt.Printf("%s\n", generation)
 }
