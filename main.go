@@ -87,14 +87,14 @@ func shuffleLocations(locations []location) []location {
 
 /* Given a generation of trips, create n choose 2 children.
 TODO: mutation in this step? */
-func makeChildren(generation []trip, numChildren int) []trip {
+func makeChildren(generation []trip, numChildren int, mutationRate float64) []trip {
     length := len(generation)
     children := make([]trip, 0, length)
     for i := 0; i < length; i++ {
         for j := i; j <length; j++ {
             if i != j {
                 child := makeChild(generation[i].locations, generation[j].locations)
-                // room for mutation?
+                child = mutate(child, mutationRate)
                 children = append(children, newTrip(child))
             }
         }
@@ -155,26 +155,47 @@ func getGenerationIndexes(generation []trip, indexes []int) []trip {
     return result
 }
 
+/* Mutate a trip of locations. */
+func mutate(locations []location, mutationRate float64) []location {
+    length := len(locations)
+    for i := 0; i < length; i++ {
+        if rand.Float64() < mutationRate {
+            point := rand.Intn(length)
+            temp := locations[i]
+            locations[i] = locations[point]
+            locations[point] = temp
+        }
+    }
+    return locations
+}
+
 /* Print out a generation. */
 func printGeneration(generation []trip) {
     for i := 0; i < len(generation); i++ {
-        fmt.Printf("%+v\n", generation[i])
+        fmt.Printf("%+v\n", generation[i].totalDistance)
     }
 }
 
 /* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
-    generation := newGeneration(3, 5, 1000, 1000)
+    generation := newGeneration(190, 100, 500, 500)
     fmt.Print("-----Before Training-----\n")
-    printGeneration(generation)
+    printGeneration(getSmallest(generation, 1))
 
-    n := 100
+    n := 1000
+    mutationRate := 0.1
     for i := 0; i < n; i++ {
-        generation = getSmallest(generation, 3)
-        generation = makeChildren(generation, 3)
+        generation = getSmallest(generation, 20)
+        best := getSmallest(generation, 1)[0]
+        generation = makeChildren(generation, 189, mutationRate)
+        generation = append(generation, best)
+        if i % 100 == 0 {
+            fmt.Printf("%d-", i)
+        }
     }
+    fmt.Print("\n")
 
-    generation = getSmallest(generation, 2)
+    generation = getSmallest(generation, 1)
     fmt.Print("-----After Training-----\n")
     printGeneration(generation)
 }
