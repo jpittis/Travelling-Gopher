@@ -159,14 +159,14 @@ func printGeneration(generation []trip) {
     }
 }
 
-/* Create a random generations of trips. Run the evolutionary loop.g */
+/* Create a random generations of trips. Run the evolutionary loop. */
 func main() {
     rand.Seed(time.Now().UnixNano())
     generation := newGeneration(200, 10, 500, 500)
     fmt.Print("-----Before Training-----\n")
     printGeneration(getSmallest(generation, 1))
 
-    n := 10000
+    n := 1000
     mutationRate := 0.1
     for i := 0; i < n; i++ {
         generation = getSmallest(generation, 20)
