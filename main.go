@@ -13,6 +13,7 @@ import (
     "fmt"
     "math/rand"
     "math"
+    "time"
 )
 
 /* Holds the x and y coordinates of a location. */
@@ -178,6 +179,7 @@ func printGeneration(generation []trip) {
 
 /* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
+    rand.Seed(time.Now().UTC().UnixNano())
     generation := newGeneration(190, 100, 500, 500)
     fmt.Print("-----Before Training-----\n")
     printGeneration(getSmallest(generation, 1))
