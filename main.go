@@ -105,20 +105,45 @@ func makeChildren(generation []trip, numChildren int, mutationRate float64) []tr
 
 /* Returns a child of the two given locations. */
 func makeChild(a []location, b []location) []location {
+    return a/*
     length := len(a)
-    child := make([]location, length)
+    child := make([]location, 0, length)
 
+    // Continuous segment is taken from a. It has length end-start.
     start := rand.Intn(length)
     end := rand.Intn(length)
-    /* Index from start to end will be from parent a. The rest is from parent b. */
+
+    for i := start; i <= end; i++ {
+        child = append(child, a[i])
+    }
+
     for i := 0; i < length; i++ {
-        if i >= start && i <= end {
-            child[i] = a[i]
-        } else {
-            child[i] = b[i]  
+        match := false
+        for j := 0; j <= end - start; j++ {
+            if child[j] == b[i] {
+                match = true
+                break
+            }
+        }
+
+        if match != true {
+            child = append(child, b[i])
         }
     }
-    return child
+
+    if len(child) != length { panic(fmt.Sprintf("Incorrect Length: %s", len(child))); }
+    
+    if totalDistance(child) == 0 {
+        fmt.Printf("%+v\n", child)
+        panic("ZERO!")
+    }
+    if totalDistance(a) == 0 {
+        panic("ZERO!")
+    }
+    if totalDistance(b) == 0 {
+        panic("ZERO!")
+    }
+    return child*/
 }
 
 /* Returns the given number of smallest trips.
@@ -182,11 +207,11 @@ func printGeneration(generation []trip) {
 /* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
     rand.Seed(time.Now().UnixNano())
-    generation := newGeneration(190, 100, 500, 500)
+    generation := newGeneration(190, 10, 500, 500)
     fmt.Print("-----Before Training-----\n")
     printGeneration(getSmallest(generation, 1))
 
-    n := 10
+    n := 10000
     mutationRate := 0.1
     for i := 0; i < n; i++ {
         generation = getSmallest(generation, 20)
@@ -194,7 +219,7 @@ func main() {
         generation = makeChildren(generation, 189, mutationRate)
         generation = append(generation, best)
         if i % 100 == 0 {
-            fmt.Printf("%d-", i)
+            fmt.Printf("\r%d-", i)
         }
     }
     fmt.Print("\n")
