@@ -162,9 +162,11 @@ func mutate(locations []location, mutationRate float64) []location {
     for i := 0; i < length; i++ {
         if rand.Float64() < mutationRate {
             point := rand.Intn(length)
-            temp := locations[i]
-            locations[i] = locations[point]
-            locations[point] = temp
+            if point != i {
+                temp := locations[i]
+                locations[i] = locations[point]
+                locations[point] = temp
+            }
         }
     }
     return locations
@@ -179,12 +181,12 @@ func printGeneration(generation []trip) {
 
 /* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
-    rand.Seed(time.Now().UTC().UnixNano())
+    rand.Seed(time.Now().UnixNano())
     generation := newGeneration(190, 100, 500, 500)
     fmt.Print("-----Before Training-----\n")
     printGeneration(getSmallest(generation, 1))
 
-    n := 1000
+    n := 10
     mutationRate := 0.1
     for i := 0; i < n; i++ {
         generation = getSmallest(generation, 20)
