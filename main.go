@@ -86,68 +86,22 @@ func shuffleLocations(locations []location) []location {
     return result
 }
 
-/* Given a generation of trips, create n choose 2 children.
-TODO: mutation in this step? */
+/* Given a generation of trips, create n choose 2 children. */
 func makeChildren(generation []trip, numChildren int, mutationRate float64) []trip {
     length := len(generation)
-    children := make([]trip, 0, length)
+    children := make([]trip, 0, numChildren * length)
     for i := 0; i < length; i++ {
-        for j := i; j <length; j++ {
-            if i != j {
-                child := makeChild(generation[i].locations, generation[j].locations)
-                child = mutate(child, mutationRate)
-                children = append(children, newTrip(child))
-            }
+        for j := 0; j < numChildren; j++ {
+            child := make([]location, len(generation[i].locations), cap(generation[i].locations))
+            copy(child, generation[i].locations)
+            child = mutate(child, mutationRate)
+            children = append(children, newTrip(child))
         }
     }
     return children
 }
 
-/* Returns a child of the two given locations. */
-func makeChild(a []location, b []location) []location {
-    return a/*
-    length := len(a)
-    child := make([]location, 0, length)
-
-    // Continuous segment is taken from a. It has length end-start.
-    start := rand.Intn(length)
-    end := rand.Intn(length)
-
-    for i := start; i <= end; i++ {
-        child = append(child, a[i])
-    }
-
-    for i := 0; i < length; i++ {
-        match := false
-        for j := 0; j <= end - start; j++ {
-            if child[j] == b[i] {
-                match = true
-                break
-            }
-        }
-
-        if match != true {
-            child = append(child, b[i])
-        }
-    }
-
-    if len(child) != length { panic(fmt.Sprintf("Incorrect Length: %s", len(child))); }
-    
-    if totalDistance(child) == 0 {
-        fmt.Printf("%+v\n", child)
-        panic("ZERO!")
-    }
-    if totalDistance(a) == 0 {
-        panic("ZERO!")
-    }
-    if totalDistance(b) == 0 {
-        panic("ZERO!")
-    }
-    return child*/
-}
-
-/* Returns the given number of smallest trips.
-TODO: base case of len(generation) == 0 will crash */
+/* Returns the given number of smallest trips. */
 func getSmallest(generation []trip, numTrips int) []trip {
     smallest := make([]int, 0, numTrips)
     for i := 0; i < numTrips; i++ {
@@ -162,6 +116,7 @@ func getSmallest(generation []trip, numTrips int) []trip {
     return getGenerationIndexes(generation, smallest)
 }
 
+/* Returns true integer */
 func integerInSlice(slice []int, num int) bool {
     for i := 0; i < len(slice); i++ {
         if slice[i] == num {
@@ -207,7 +162,7 @@ func printGeneration(generation []trip) {
 /* Create a random generations of trips. Run the evolutionary loop.g */
 func main() {
     rand.Seed(time.Now().UnixNano())
-    generation := newGeneration(190, 10, 500, 500)
+    generation := newGeneration(200, 10, 500, 500)
     fmt.Print("-----Before Training-----\n")
     printGeneration(getSmallest(generation, 1))
 
@@ -216,13 +171,13 @@ func main() {
     for i := 0; i < n; i++ {
         generation = getSmallest(generation, 20)
         best := getSmallest(generation, 1)[0]
-        generation = makeChildren(generation, 189, mutationRate)
+        generation = makeChildren(generation, 10, mutationRate)
         generation = append(generation, best)
         if i % 100 == 0 {
-            fmt.Printf("\r%d-", i)
+            fmt.Printf("\r%d / %d", i, n)
         }
     }
-    fmt.Print("\n")
+    fmt.Print("\r")
 
     generation = getSmallest(generation, 1)
     fmt.Print("-----After Training-----\n")
